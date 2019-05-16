@@ -26,16 +26,16 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 # read the class_list.txt to a list
 with open("class_list.txt") as f:
   obj_list = f.readlines()
-## remove whitespace characters like `\n` at the end of each line
+  ## remove whitespace characters like `\n` at the end of each line
   obj_list = [x.strip() for x in obj_list]
 ## e.g. first object in the list
-#print(obj_list[0])
+# print(obj_list[0])
 
 # change directory to the one with the files to be changed
 parent_path = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
 parent_path = os.path.abspath(os.path.join(parent_path, os.pardir))
-GT_PATH = os.path.join(parent_path, 'input','ground-truth')
-#print(GT_PATH)
+GT_PATH = os.path.join(parent_path, 'input', 'ground-truth')
+# print(GT_PATH)
 os.chdir(GT_PATH)
 
 # old files (YOLO format) will be moved to a new folder (backup/)
@@ -49,24 +49,25 @@ if len(txt_list) == 0:
   print("Error: no .txt files found in ground-truth")
   sys.exit()
 for tmp_file in txt_list:
-  #print(tmp_file)
+  # print(tmp_file)
   # 1. check that there is an image with that name
   ## get name before ".txt"
-  image_name = tmp_file.split(".txt",1)[0]
-  #print(image_name)
+  image_name = tmp_file.split(".txt", 1)[0]
+  print(image_name)
   ## check if image exists
-  for fname in os.listdir('../images'):
-    if fname.startswith(image_name):
-      ## image found
-      #print(fname)
-      img = cv2.imread('../images/' + fname)
-      ## get image width and height
-      img_height, img_width = img.shape[:2]
-      break
+  img_path = '../images/' + image_name + '.jpg'
+  if os.path.exists(img_path):
+    ## image found
+    # print(fname)
+    img = cv2.imread(img_path)
+    ## get image width and height
+    img_height, img_width = img.shape[:2]
   else:
     ## image not found
     print("Error: image not found, corresponding to " + tmp_file)
-    sys.exit()
+    os.rename(tmp_file, "backup/" + tmp_file)
+    continue
+    # sys.exit()
   # 2. open txt file lines to a list
   with open(tmp_file) as f:
     content = f.readlines()
@@ -81,8 +82,9 @@ for tmp_file in txt_list:
       ## "c" stands for center and "n" stands for normalized
       obj_id, x_c_n, y_c_n, width_n, height_n = line.split()
       obj_name = obj_list[int(obj_id)]
-      left, top, right, bottom = convert_yolo_coordinates_to_voc(x_c_n, y_c_n, width_n, height_n, img_width, img_height)
+      left, top, right, bottom = convert_yolo_coordinates_to_voc(x_c_n, y_c_n, width_n, height_n, img_width,
+                                                                 img_height)
       ## add new line to file
-      #print(obj_name + " " + str(left) + " " + str(top) + " " + str(right) + " " + str(bottom))
+      # print(obj_name + " " + str(left) + " " + str(top) + " " + str(right) + " " + str(bottom))
       new_f.write(obj_name + " " + str(left) + " " + str(top) + " " + str(right) + " " + str(bottom) + '\n')
 print("Conversion completed!")
